@@ -11,12 +11,12 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-
-from util import manhattanDistance
-from game import Directions
-import random, util
+import util
+import random
 
 from game import Agent
+from util import manhattanDistance, matrixAsList
+
 
 class ReflexAgent(Agent):
     """
@@ -27,7 +27,6 @@ class ReflexAgent(Agent):
       it in any way you see fit, so long as you don't touch our method
       headers.
     """
-
 
     def getAction(self, gameState):
         """
@@ -67,14 +66,46 @@ class ReflexAgent(Agent):
         to create a masterful evaluation function.
         """
         # Useful information you can extract from a GameState (pacman.py)
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
-        newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        successor_game_state = currentGameState.generatePacmanSuccessor(action)
+        new_pos = successor_game_state.getPacmanPosition()
+        foods = currentGameState.getFood()
+        new_ghost_states = successor_game_state.getGhostStates()
+        new_scared_times = [ghostState.scaredTimer for ghostState in new_ghost_states]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        ##########################
+        # SCARED TIMES
+        ##########################
+        score_scared_times = sum(new_scared_times)
+
+        ##########################
+        # GHOST DISTANCE
+        ##########################
+        minus_inf = - 10 ** 10
+        new_ghosts_positions = [ghost_state.configuration.pos for ghost_state in new_ghost_states]
+        dist_new_pos_ghosts = [manhattanDistance(xy1=new_pos, xy2=ghost) for ghost in new_ghosts_positions]
+        nearest_ghost_dist = min(dist_new_pos_ghosts)
+        score_ghost_dist = - 2 / nearest_ghost_dist if nearest_ghost_dist != 0 else minus_inf
+        if nearest_ghost_dist == 0:
+            return score_ghost_dist
+
+        ##########################
+        # FOOD SCORE
+        ##########################
+        foods_positions = matrixAsList(matrix=foods.data, value=True)
+        nearest_food = min([manhattanDistance(xy1=new_pos, xy2=food) for food in foods_positions])
+        score_food = 1 / nearest_food if nearest_food != 0 else 2
+
+        ##########################
+        # TOTAL SCORE
+        ##########################
+        if score_scared_times > 0:
+            score = score_food
+        else:
+            score = score_ghost_dist + score_food
+
+        return score
+
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -85,6 +116,7 @@ def scoreEvaluationFunction(currentGameState):
       (not reflex agents).
     """
     return currentGameState.getScore()
+
 
 class MultiAgentSearchAgent(Agent):
     """
@@ -101,10 +133,11 @@ class MultiAgentSearchAgent(Agent):
       is another abstract class.
     """
 
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
+    def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
+
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -137,6 +170,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
@@ -148,6 +182,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -164,6 +199,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
+
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -174,6 +210,6 @@ def betterEvaluationFunction(currentGameState):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+
 # Abbreviation
 better = betterEvaluationFunction
-

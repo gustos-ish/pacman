@@ -131,6 +131,7 @@ class FixedRandom:
  Data structures useful for implementing SearchAgents
 """
 
+
 class Stack:
     "A container with a last-in-first-out (LIFO) queuing policy."
     def __init__(self):
@@ -147,6 +148,7 @@ class Stack:
     def isEmpty(self):
         "Returns true if the stack is empty"
         return len(self.list) == 0
+
 
 class Queue:
     "A container with a first-in-first-out (FIFO) queuing policy."
@@ -167,6 +169,7 @@ class Queue:
     def isEmpty(self):
         "Returns true if the queue is empty"
         return len(self.list) == 0
+
 
 class PriorityQueue:
     """
@@ -206,6 +209,7 @@ class PriorityQueue:
         else:
             self.push(item, priority)
 
+
 class PriorityQueueWithFunction(PriorityQueue):
     """
     Implements a priority queue with the same push/pop signature of the
@@ -223,15 +227,17 @@ class PriorityQueueWithFunction(PriorityQueue):
         PriorityQueue.push(self, item, self.priorityFunction(item))
 
 
-def manhattanDistance( xy1, xy2 ):
+def manhattanDistance(xy1, xy2):
     "Returns the Manhattan distance between points xy1 and xy2"
-    return abs( xy1[0] - xy2[0] ) + abs( xy1[1] - xy2[1] )
+    return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
 
 """
   Data structures and functions useful for various course projects
 
   The search project should not need anything below this line.
 """
+
 
 class Counter(dict):
     """
@@ -446,6 +452,7 @@ class Counter(dict):
             addend[key] = -1 * y[key]
         return addend
 
+
 def raiseNotDefined():
     fileName = inspect.stack()[1][1]
     line = inspect.stack()[1][2]
@@ -453,6 +460,7 @@ def raiseNotDefined():
 
     print("*** Method not implemented: %s at line %s of %s" % (method, line, fileName))
     sys.exit(1)
+
 
 def normalize(vectorOrCounter):
     """
@@ -473,6 +481,7 @@ def normalize(vectorOrCounter):
         if s == 0: return vector
         return [el / s for el in vector]
 
+
 def nSample(distribution, values, n):
     if sum(distribution) != 1:
         distribution = normalize(distribution)
@@ -489,6 +498,7 @@ def nSample(distribution, values, n):
             cdf += distribution[distPos]
     return samples
 
+
 def sample(distribution, values = None):
     if type(distribution) == Counter:
         items = sorted(distribution.items())
@@ -503,9 +513,11 @@ def sample(distribution, values = None):
         total += distribution[i]
     return values[i]
 
+
 def sampleFromCounter(ctr):
     items = sorted(ctr.items())
     return sample([v for k,v in items], [k for k,v in items])
+
 
 def getProbability(value, distribution, values):
     """
@@ -518,9 +530,11 @@ def getProbability(value, distribution, values):
             total += prob
     return total
 
+
 def flipCoin( p ):
     r = random.random()
     return r < p
+
 
 def chooseFromDistribution( distribution ):
     "Takes either a counter or a list of (prob, key) pairs and samples"
@@ -532,6 +546,7 @@ def chooseFromDistribution( distribution ):
         base += prob
         if r <= base: return element
 
+
 def nearestPoint( pos ):
     """
     Finds the nearest grid point to a position (discretizes).
@@ -542,6 +557,7 @@ def nearestPoint( pos ):
     grid_col = int( current_col + 0.5 )
     return ( grid_row, grid_col )
 
+
 def sign( x ):
     """
     Returns 1 or -1 depending on the sign of x
@@ -550,6 +566,7 @@ def sign( x ):
         return 1
     else:
         return -1
+
 
 def arrayInvert(array):
     """
@@ -560,6 +577,7 @@ def arrayInvert(array):
         for inner in range(len(outer)):
             result[inner].append(outer[inner])
     return result
+
 
 def matrixAsList( matrix, value = True ):
     """
@@ -572,6 +590,7 @@ def matrixAsList( matrix, value = True ):
             if matrix[row][col] == value:
                 cells.append( ( row, col ) )
     return cells
+
 
 def lookup(name, namespace):
     """
@@ -590,6 +609,7 @@ def lookup(name, namespace):
         if len(options) == 1: return options[0]
         if len(options) > 1: raise Exception('Name conflict for %s')
         raise Exception('%s not found as a method or class' % name)
+
 
 def pause():
     """
@@ -648,9 +668,11 @@ _ORIGINAL_STDOUT = None
 _ORIGINAL_STDERR = None
 _MUTED = False
 
+
 class WritableNull:
     def write(self, string):
         pass
+
 
 def mutePrint():
     global _ORIGINAL_STDOUT, _ORIGINAL_STDERR, _MUTED
@@ -662,6 +684,7 @@ def mutePrint():
     #_ORIGINAL_STDERR = sys.stderr
     sys.stdout = WritableNull()
     #sys.stderr = WritableNull()
+
 
 def unmutePrint():
     global _ORIGINAL_STDOUT, _ORIGINAL_STDERR, _MUTED
