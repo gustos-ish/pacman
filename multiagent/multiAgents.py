@@ -13,6 +13,7 @@
 
 import util
 import random
+import numpy as np
 
 from game import Agent
 from util import manhattanDistance, matrixAsList
@@ -38,17 +39,17 @@ class ReflexAgent(Agent):
         some Directions.X for some X in the set {North, South, West, East, Stop}
         """
         # Collect legal moves and successor states
-        legalMoves = gameState.getLegalActions()
+        legal_moves = gameState.getLegalActions()
 
         # Choose one of the best actions
-        scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
-        bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        scores = [self.evaluationFunction(gameState, action) for action in legal_moves]
+        best_score = max(scores)
+        best_indices = [index for index in range(len(scores)) if scores[index] == best_score]
+        chosen_index = random.choice(best_indices)  # Pick randomly among the best
 
         "Add more of your code here if you want to"
 
-        return legalMoves[chosenIndex]
+        return legal_moves[chosen_index]
 
     def evaluationFunction(self, currentGameState, action):
         """
@@ -168,7 +169,79 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        best_action = self.minimax_decision(game_state=gameState, depth=0)
+        return best_action
+
+    def minimax_decision(self, game_state, depth):
+        return self.max_agent_decision(game_state=game_state, depth=depth)
+
+    def max_agent_decision(self, game_state, depth):
+        """
+        Returns the action which maximizes the score
+        after the next depth rounds of the game
+
+        :param game_state:
+        :param depth:
+        :return:
+        """
+        if game_state.isWin() or game_state.isLose():
+            return self.evaluationFunction(currentGameState=game_state)
+
+        pacman_index = 0
+        best_action = None
+        max_score = - np.inf
+        pacman_actions = game_state.getLegalActions(agentIndex=pacman_index)
+        for action in pacman_actions:
+            first_ghost_index = 1
+            score = self.min_agent_score(
+                game_state=game_state.generateSuccessor(pacman_index, action),
+                depth=depth,
+                ghost_index=first_ghost_index
+            )
+            if score > max_score:
+                max_score = score
+                best_action = action
+
+        if depth == 0:
+            return best_action
+        else:
+            return max_score
+
+    def min_agent_score(self, game_state, depth, ghost_index):
+        """
+        Returns the minimal score
+        after the next depth rounds of the game
+
+        :param game_state:
+        :param depth:
+        :param ghost_index:
+        :return:
+        """
+        if game_state.isLose() or game_state.isWin():
+            return self.evaluationFunction(currentGameState=game_state)
+
+        pacman_index = 0
+        min_score = np.inf
+        next_ghost = (ghost_index + 1) % game_state.getNumAgents()
+        actions = game_state.getLegalActions(agentIndex=ghost_index)
+        for action in actions:
+            if next_ghost == pacman_index:
+                if depth == self.depth - 1:
+                    score = self.evaluationFunction(game_state.generateSuccessor(agentIndex=ghost_index, action=action))
+                else:
+                    score = self.max_agent_decision(
+                        game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                        depth=depth + 1
+                    )
+            else:
+                score = self.min_agent_score(
+                    game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                    depth=depth,
+                    ghost_index=next_ghost
+                )
+            if score < min_score:
+                min_score = score
+        return min_score
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
