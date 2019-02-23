@@ -10,8 +10,12 @@ Algorithms implemented through the course
 * uniform cost search
 * a star search
 
+cf search/search.py
+
 **multiagent**
 
 * minimax
 * alphabeta
 * expectimax
+
+cf multiagent/multiAgents.py
