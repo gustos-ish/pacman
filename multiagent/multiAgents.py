@@ -4,19 +4,19 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-import util
 import random
 import numpy as np
+import multiagent.util as util
 
-from game import Agent
-from util import manhattanDistance, matrixAsList
+from multiagent.game import Agent
+from multiagent.util import manhattanDistance, matrixAsList
 
 
 class ReflexAgent(Agent):
@@ -185,7 +185,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         :return:
         """
         if game_state.isWin() or game_state.isLose():
-            return self.evaluationFunction(currentGameState=game_state)
+            return game_state.getScore()
 
         pacman_index = 0
         best_action = None
@@ -194,7 +194,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         for action in pacman_actions:
             first_ghost_index = 1
             score = self.min_agent_score(
-                game_state=game_state.generateSuccessor(pacman_index, action),
+                game_state=game_state.generateSuccessor(agentIndex=pacman_index, action=action),
                 depth=depth,
                 ghost_index=first_ghost_index
             )
@@ -204,8 +204,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         if depth == 0:
             return best_action
-        else:
-            return max_score
+
+        return max_score
 
     def min_agent_score(self, game_state, depth, ghost_index):
         """
@@ -218,14 +218,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         :return:
         """
         if game_state.isLose() or game_state.isWin():
-            return self.evaluationFunction(currentGameState=game_state)
+            return game_state.getScore()
 
         pacman_index = 0
         min_score = np.inf
-        next_ghost = (ghost_index + 1) % game_state.getNumAgents()
+        next_agent_index = (ghost_index + 1) % game_state.getNumAgents()
         actions = game_state.getLegalActions(agentIndex=ghost_index)
         for action in actions:
-            if next_ghost == pacman_index:
+            if next_agent_index == pacman_index:
                 if depth == self.depth - 1:
                     score = self.evaluationFunction(game_state.generateSuccessor(agentIndex=ghost_index, action=action))
                 else:
@@ -237,10 +237,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 score = self.min_agent_score(
                     game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
                     depth=depth,
-                    ghost_index=next_ghost
+                    ghost_index=next_agent_index
                 )
-            if score < min_score:
-                min_score = score
+            min_score = min(score, min_score)
+
         return min_score
 
 
@@ -254,7 +254,97 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        best_action = self.alpha_beta_minimax_decision(game_state=gameState, depth=0)
+        return best_action
+
+    def alpha_beta_minimax_decision(self, game_state, depth):
+        alpha_start = - np.inf
+        beta_start = np.inf
+        return self.max_agent_decision(game_state=game_state, depth=depth, alpha=alpha_start, beta=beta_start)
+
+    def max_agent_decision(self, game_state, depth, alpha, beta):
+        """
+
+        :param game_state:
+        :param depth:
+        :param alpha:
+        :param beta:
+        :return:
+        """
+        if game_state.isLose() or game_state.isWin():
+            return game_state.getScore()
+
+        pacman_index = 0
+        best_action = None
+        max_score = - np.inf
+        actions = game_state.getLegalActions(agentIndex=pacman_index)
+        for action in actions:
+            first_ghost_index = 1
+            action_score = self.min_agent_score(
+                game_state=game_state.generateSuccessor(agentIndex=pacman_index, action=action),
+                depth=depth,
+                ghost_index=first_ghost_index,
+                alpha=alpha,
+                beta=beta,
+            )
+            if action_score > max_score:
+                max_score = action_score
+                best_action = action
+
+            if max_score > beta:
+                return max_score
+
+            alpha = max(alpha, max_score)
+
+        if depth == 0:
+            return best_action
+
+        return max_score
+
+    def min_agent_score(self, game_state, depth, ghost_index, alpha, beta):
+        """
+
+        :param game_state:
+        :param depth:
+        :param ghost_index:
+        :param alpha:
+        :param beta:
+        :return:
+        """
+        if game_state.isLose() or game_state.isWin():
+            return game_state.getScore()
+
+        pacman_index = 0
+        min_score = np.inf
+        actions = game_state.getLegalActions(agentIndex=ghost_index)
+        next_agent_index = (ghost_index + 1) % game_state.getNumAgents()
+        for action in actions:
+            if next_agent_index == pacman_index:
+                if depth == self.depth - 1:
+                    score = self.evaluationFunction(game_state.generateSuccessor(agentIndex=ghost_index, action=action))
+                else:
+                    score = self.max_agent_decision(
+                        game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                        depth=depth + 1,
+                        alpha=alpha,
+                        beta=beta,
+                    )
+            else:
+                score = self.min_agent_score(
+                    game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                    depth=depth,
+                    ghost_index=next_agent_index,
+                    alpha=alpha,
+                    beta=beta,
+                )
+
+            min_score = min(score, min_score)
+            if min_score < alpha:
+                return min_score
+
+            beta = min(beta, min_score)
+
+        return min_score
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -270,7 +360,86 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        best_action = self.expectimax_decision(game_state=gameState, depth=0)
+        return best_action
+
+    def expectimax_decision(self, game_state, depth):
+        return self.max_agent_decision(game_state=game_state, depth=depth)
+
+    def max_agent_decision(self, game_state, depth):
+        """
+
+        :param game_state:
+        :param depth:
+        :return:
+        """
+        if game_state.isLose() or game_state.isWin():
+            return game_state.getScore()
+
+        pacman_index = 0
+        best_action = None
+        max_score = - np.inf
+        actions = sorted(game_state.getLegalActions(agentIndex=pacman_index))
+        #if depth == 0:
+        #    print(actions)
+
+        for action in actions:
+            first_ghost_index = 1
+            action_score = self.min_agent_score(
+                game_state=game_state.generateSuccessor(agentIndex=pacman_index, action=action),
+                depth=depth,
+                ghost_index=first_ghost_index,
+            )
+
+            if action_score > max_score:
+                max_score = action_score
+                best_action = action
+
+        if depth == 0:
+            return best_action
+
+        return max_score
+
+    def min_agent_score(self, game_state, depth, ghost_index):
+        """
+
+        :param game_state:
+        :param depth:
+        :param ghost_index:
+        :return:
+        """
+        if game_state.isLose() or game_state.isWin():
+            return game_state.getScore()
+
+        score = - np.inf
+        pacman_index = 0
+        actions = game_state.getLegalActions(agentIndex=ghost_index)
+        next_agent_index = (ghost_index + 1) % game_state.getNumAgents()
+
+        for action in actions:
+            prob = 1.0 / len(actions)
+            if not np.isfinite(score):
+                score = 0
+
+            if next_agent_index == pacman_index:
+                if depth == self.depth - 1:
+                    a_ = self.evaluationFunction(
+                        game_state.generateSuccessor(agentIndex=ghost_index, action=action))
+                    score += prob * a_
+
+                else:
+                    score += prob * self.max_agent_decision(
+                        game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                        depth=depth + 1,
+                    )
+            else:
+                score += prob * self.min_agent_score(
+                    game_state=game_state.generateSuccessor(agentIndex=ghost_index, action=action),
+                    depth=depth,
+                    ghost_index=next_agent_index,
+                )
+
+        return score
 
 
 def betterEvaluationFunction(currentGameState):
@@ -281,7 +450,52 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    # Useful information you can extract from a GameState (pacman.py)
+    pacman_pos = currentGameState.getPacmanPosition()
+    capsules = currentGameState.getCapsules()
+    foods = currentGameState.getFood()
+    ghost_states = currentGameState.getGhostStates()
+    scared_times = [ghostState.scaredTimer for ghostState in ghost_states]
+
+    "*** YOUR CODE HERE ***"
+    ##########################
+    # FOOD SCORE
+    ##########################
+    foods_positions = matrixAsList(matrix=foods.data, value=True)
+    nearest_food = min([manhattanDistance(xy1=pacman_pos, xy2=food) for food in foods_positions])
+
+    ##########################
+    # CAPSULE POS
+    ##########################
+    dist_pacman_capsule = [manhattanDistance(xy1=pacman_pos, xy2=capsule) for capsule in capsules]
+    if len(dist_pacman_capsule) > 0:
+        nearest_capsule = min(dist_pacman_capsule)
+    else:
+        nearest_capsule = 0
+
+    ##########################
+    # GHOST DISTANCE
+    ##########################
+    ghosts_positions = [ghost_state.configuration.pos for ghost_state in ghost_states]
+    dist_pacman_ghosts = [manhattanDistance(xy1=pacman_pos, xy2=ghost) for ghost in ghosts_positions]
+    nearest_ghost_dist = min(dist_pacman_ghosts)
+
+    ##########################
+    # TOTAL SCORE
+    ##########################
+
+    mu = 0 * np.mean([nearest_ghost_dist, nearest_food, nearest_capsule])
+    sigma = np.std([nearest_ghost_dist, nearest_food, nearest_capsule])
+    if sigma == 0:
+        sigma = 1
+    x = (nearest_ghost_dist - mu) / sigma
+    y = (nearest_food - mu) / sigma
+    z = (nearest_capsule - mu) / sigma
+
+    score = x - y - z + currentGameState.getScore()
+
+    return score
 
 
 # Abbreviation

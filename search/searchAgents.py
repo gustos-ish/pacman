@@ -34,12 +34,10 @@ description for details.
 Good luck and happy searching!
 """
 
-from game import Directions
-from game import Agent
-from game import Actions
-import util
 import time
 import search
+from game import Directions, Agent, Actions
+
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -601,5 +599,3 @@ def mazeDistance(point1, point2, gameState):
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
-
-

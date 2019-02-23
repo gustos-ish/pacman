@@ -20,6 +20,7 @@ Pacman agents (in searchAgents.py).
 import util
 import searchAgents as sa
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -62,6 +63,7 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+
 def tinyMazeSearch(problem):
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -72,8 +74,10 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
 class SolutionNotFound(Exception):
     pass
+
 
 def uninformed_search(problem, fringe):
     """
@@ -110,6 +114,7 @@ def uninformed_search(problem, fringe):
 
     raise SolutionNotFound
 
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -135,6 +140,7 @@ def breadthFirstSearch(problem):
     fringe = util.Queue()  # FIFO
     return uninformed_search(problem=problem, fringe=fringe)
 
+
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
@@ -142,12 +148,14 @@ def uniformCostSearch(problem):
     fringe = util.PriorityQueueWithFunction(priorityFunction=uniform_cost_function)
     return uninformed_search(problem=problem, fringe=fringe)
 
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
 
 def a_star_heuristic(position, problem):
     """
@@ -157,6 +165,7 @@ def a_star_heuristic(position, problem):
     xy1 = position
     xy2 = problem.goal
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first.
