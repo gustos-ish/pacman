@@ -1,3 +1,5 @@
 **/.idea/
 .idea/
 *.xml
+**/pacman.egg-info/
+pacman.egg-info/
